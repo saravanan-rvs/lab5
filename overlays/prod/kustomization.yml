@@ -5,7 +5,7 @@ resources:
   - ../../base
 images:
   - name: nginx
-    newTag: 1.25
+    newTag: "1.27"
 patches:
   - target:
       kind: ConfigMap
