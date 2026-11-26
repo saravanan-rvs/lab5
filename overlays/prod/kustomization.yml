@@ -1,23 +1,41 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: app-prod
+
+namespace: prod
+namePrefix: prod-
+
 resources:
   - ../../base
+  - namespace.yaml
+
+labels:
+  - pairs:
+      environment: prod
+    includeTemplates: true
+
+replicas:
+  - name: webapp
+    count: 3
+
 images:
   - name: nginx
     newTag: "1.27"
+
+configMapGenerator:
+  - name: web-content
+    behavior: replace
+    files:
+      - index.html
+
 patches:
+  - path: resources-patch.yaml
   - target:
-      kind: ConfigMap
-      name: app-config
+      kind: Service
+      name: webapp
     patch: |-
       - op: replace
-        path: /data/LOG_LEVEL
-        value: warn
-  - target:
-      kind: Deployment
-      name: web-app
-    patch: |-
-      - op: replace
-        path: /spec/replicas
-        value: 3
+        path: /spec/type
+        value: NodePort
+      - op: add
+        path: /spec/ports/0/nodePort
+        value: 30082
